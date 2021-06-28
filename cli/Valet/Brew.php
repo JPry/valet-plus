@@ -9,6 +9,7 @@ class Brew
 
     public $cli;
     public $files;
+    private $prefix;
 
     /**
      * Create a new Brew instance.
@@ -267,5 +268,29 @@ class Brew
         }
 
         return $versions;
+    }
+
+    public function getBrewPath()
+    {
+        if (null === $this->prefix) {
+            $this->prefix = trim($this->cli->runAsUser('brew --prefix'));
+        }
+
+        return $this->prefix;
+    }
+
+    public function getLink($link)
+    {
+        $linkPath = sprintf(
+            '%s/bin/%s',
+            $this->getBrewPath(),
+            ltrim($link, '/\\')
+        );
+
+        if (!$this->files->isLink($linkPath)) {
+            throw new DomainException(sprintf('Unable to determine link for %s', $link));
+        }
+
+        return $this->files->readLink($linkPath);
     }
 }
