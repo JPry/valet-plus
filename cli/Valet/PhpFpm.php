@@ -31,8 +31,6 @@ class PhpFpm
         self::PHP_V71_VERSION
     ];
 
-    const LOCAL_PHP_FOLDER = '/usr/local/etc/valet-php/';
-
     public $brew;
     public $cli;
     public $files;
@@ -122,14 +120,15 @@ class PhpFpm
      */
     public function fpmConfigPath()
     {
+        $localFolder = "{$this->brew->getBrewPath()}/etc/valet-php";
         $confLookup = [
-            self::PHP_V80_VERSION => self::LOCAL_PHP_FOLDER . '8.0/php-fpm.d/www.conf',
-            self::PHP_V74_VERSION => self::LOCAL_PHP_FOLDER . '7.4/php-fpm.d/www.conf',
-            self::PHP_V73_VERSION => self::LOCAL_PHP_FOLDER . '7.3/php-fpm.d/www.conf',
-            self::PHP_V72_VERSION => self::LOCAL_PHP_FOLDER . '7.2/php-fpm.d/www.conf',
-            self::PHP_V71_VERSION => self::LOCAL_PHP_FOLDER . '7.1/php-fpm.d/www.conf',
-            self::PHP_V70_VERSION => self::LOCAL_PHP_FOLDER . '7.0/php-fpm.d/www.conf',
-            self::PHP_V56_VERSION => self::LOCAL_PHP_FOLDER . '5.6/php-fpm.conf',
+            self::PHP_V80_VERSION => "{$localFolder}/8.0/php-fpm.d/www.conf",
+            self::PHP_V74_VERSION => "{$localFolder}/7.4/php-fpm.d/www.conf",
+            self::PHP_V73_VERSION => "{$localFolder}/7.3/php-fpm.d/www.conf",
+            self::PHP_V72_VERSION => "{$localFolder}/7.2/php-fpm.d/www.conf",
+            self::PHP_V71_VERSION => "{$localFolder}/7.1/php-fpm.d/www.conf",
+            self::PHP_V70_VERSION => "{$localFolder}/7.0/php-fpm.d/www.conf",
+            self::PHP_V56_VERSION => "{$localFolder}/5.6/php-fpm.conf",
         ];
 
         return $confLookup[$this->linkedPhp()];
@@ -372,11 +371,7 @@ class PhpFpm
      */
     public function linkedPhp()
     {
-        if (!$this->files->isLink('/usr/local/bin/php')) {
-            throw new DomainException("Unable to determine linked PHP.");
-        }
-
-        $resolvedPath = $this->files->readLink('/usr/local/bin/php');
+        $resolvedPath = $this->brew->getLink('php');
 
         $versions = self::SUPPORTED_PHP_FORMULAE;
 
@@ -455,12 +450,17 @@ class PhpFpm
         }
 
         $systemZoneName = readlink('/etc/localtime');
+
         // All versions below High Sierra
         $systemZoneName = str_replace('/usr/share/zoneinfo/', '', $systemZoneName);
+
         // macOS High Sierra has a new location for the timezone info
         $systemZoneName = str_replace('/var/db/timezone/zoneinfo/', '', $systemZoneName);
-        $contents = $this->files->get(__DIR__ . '/../stubs/z-performance.ini');
-        $contents = str_replace('TIMEZONE', $systemZoneName, $contents);
+        $contents = str_replace(
+            ['TIMEZONE', 'BREW_PREFIX'],
+            [$systemZoneName, $this->brew->getBrewPath()],
+            $this->files->get(__DIR__ . '/../stubs/z-performance.ini')
+        );
 
         $iniPath = $this->iniPath();
         $this->files->ensureDirExists($iniPath, user());
