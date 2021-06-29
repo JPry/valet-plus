@@ -9,8 +9,8 @@ class DnsMasq
     public $files;
 
     public $resolverPath = '/etc/resolver';
-    public $configPath = '/usr/local/etc/dnsmasq.conf';
-    public $exampleConfigPath = '/usr/local/opt/dnsmasq/dnsmasq.conf.example';
+    public $configPath;
+    public $exampleConfigPath;
 
     /**
      * Create a new DnsMasq instance.
@@ -24,6 +24,8 @@ class DnsMasq
         $this->cli = $cli;
         $this->brew = $brew;
         $this->files = $files;
+        $this->configPath = "{$brew->getBrewPath()}/etc/dnsmasq.conf";
+        $this->exampleConfigPath = "{$brew->getBrewPath()}/opt/dnsmasq/dnsmasq.conf.example";
     }
 
     /**
