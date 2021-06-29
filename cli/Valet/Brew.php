@@ -270,6 +270,14 @@ class Brew
         return $versions;
     }
 
+    /**
+     * Get the base path for Homebrew.
+     *
+     * On Apple silicon, this will be /opt/homebrew. On Intel machines it will be the traditional
+     * /usr/local.
+     *
+     * @return string
+     */
     public function getBrewPath()
     {
         if (null === $this->prefix) {
@@ -279,6 +287,13 @@ class Brew
         return $this->prefix;
     }
 
+    /**
+     * Checks to see if there is a Homebrew link for the given executable.
+     *
+     * @param string $link
+     *
+     * @return string
+     */
     public function getLink($link)
     {
         $linkPath = sprintf(
