@@ -5,7 +5,6 @@ namespace Valet;
 class Mailhog extends AbstractService
 {
     const NGINX_CONFIGURATION_STUB = __DIR__ . '/../stubs/mailhog.conf';
-    const NGINX_CONFIGURATION_PATH = '/usr/local/etc/nginx/valet/mailhog.conf';
 
     public $brew;
     public $cli;
@@ -104,7 +103,7 @@ class Mailhog extends AbstractService
     public function updateDomain($domain)
     {
         $this->files->putAsUser(
-            self::NGINX_CONFIGURATION_PATH,
+            "{$this->brew->getBrewPath()}/etc/nginx/valet/mailhog.conf",
             str_replace(
                 ['VALET_DOMAIN'],
                 [$domain],
