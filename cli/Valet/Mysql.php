@@ -8,11 +8,12 @@ use MYSQLI_ASSOC;
 
 class Mysql
 {
-    const MYSQL_CONF_DIR = '/usr/local/etc';
-    const MYSQL_CONF = '/usr/local/etc/my.cnf';
     const MAX_FILES_CONF = '/Library/LaunchDaemons/limit.maxfiles.plist';
-    const MYSQL_DIR = '/usr/local/var/mysql';
     const MYSQL_ROOT_PASSWORD = 'root';
+
+    private $confDir;
+    private $confPath;
+    private $mysqlDir;
 
     public $brew;
     public $cli;
@@ -46,6 +47,10 @@ class Mysql
         $this->site = $site;
         $this->files = $files;
         $this->configuration = $configuration;
+
+        $this->confDir = "{$brew->getBrewPath()}/etc";
+        $this->confPath = "{$this->confDir}/my.cnf";
+        $this->mysqlDir = "{$brew->getBrewPath()}/var/mysql";
     }
 
     /**
@@ -126,8 +131,8 @@ class Mysql
      */
     private function removeConfiguration($type = 'mysql@5.7')
     {
-        $this->files->unlink(static::MYSQL_CONF);
-        $this->files->unlink(static::MYSQL_CONF . '.default');
+        $this->files->unlink($this->confPath);
+        $this->files->unlink("{$this->confPath}.default");
     }
 
     /**
@@ -151,9 +156,9 @@ class Mysql
     {
         info('[' . $type . '] Configuring');
 
-        $this->files->chmodPath(static::MYSQL_DIR, 0777);
+        $this->files->chmodPath($this->mysqlDir, 0777);
 
-        if (!$this->files->isDir($directory = static::MYSQL_CONF_DIR)) {
+        if (!$this->files->isDir($directory = $this->confDir)) {
             $this->files->mkdirAsUser($directory);
         }
 
@@ -163,7 +168,7 @@ class Mysql
         }
 
         $this->files->putAsUser(
-            static::MYSQL_CONF,
+            $this->confPath,
             \str_replace('VALET_HOME_PATH', VALET_HOME_PATH, $contents)
         );
     }
